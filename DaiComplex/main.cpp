@@ -4,8 +4,8 @@
 int main(){
     printf("Hello world! \n");
     printf("def complex 1,1\n");
-    int x = 0;
-    complexNum* a =(complexNum*) malloc(sizeof(complexNum));
-    a -> real = 0.0;
-    free(a);
+    complexNum* a = new_complex_num(1.0,2.0);
+    printf("%f|",*get_real(a));
+    printf("%f\n",*get_complex(a));
+    destory_complexNum(a);
 }
