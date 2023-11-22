@@ -1,0 +1,57 @@
+def  parseDate(date):
+    dateParts = date.split("/")
+    day = int(dateParts[0])
+    month =int(dateParts[1])
+    year = int(dateParts[2])
+    return year * 10000 + month * 100 + day
+
+#slice the string before the "Value" as it is a special word in commbank csv
+def remove_at_value(string,substring):
+    #if the string to not contain "Value" then return the string
+    rtn = string.split(substring)[0]
+    return rtn
+
+def main():
+    import pandas
+    import sys
+    import matplotlib.pyplot as pyplot
+    import os
+    args = sys.argv[1:]
+    if len(args) != 2:
+        print("Usage: process.py <input .csv> <output file>")
+        sys.exit(0)
+    #reading input
+    input_csv = args[0]
+    report_name = args[1]
+    dataFrame = pandas.read_csv(input_csv)
+    #make directory for remport
+    try:
+        os.mkdir("./output")
+    except FileExistsError: 
+        print("Diesctory exists")
+    except:
+        print("error creating report dir")
+        exit(1)
+    
+    os.chdir("./output")
+
+    #processing the date column
+    dataFrame["Purpose"] = dataFrame["Purpose"].apply(lambda x: remove_at_value(x,"Card"))
+    dataFrame["Date"] = dataFrame["Date"].apply(parseDate)
+    dataFrame = dataFrame.sort_values(by="Date")
+    print(dataFrame.head())
+
+    #create figure for output
+    figure = pyplot.figure()
+    ax1 = figure.add_subplot(1,1,1)
+    ax1.plot(range(0,dataFrame['Balance'].size),dataFrame['Balance'])
+    figure.savefig(report_name)
+    
+    #proide sum by the purpose in the data frame
+    grouped_sum = dataFrame.groupby("Purpose").sum().sort_values(by="Amount")
+    grouped_sum.to_csv("./grouped_sum.csv")
+    grouped_sum["Amount"].plot.barh(figsize=(10,10),xlim=(-500,500)).figure.savefig("./grouped_sum.png")   
+if __name__ == "__main__":
+    main()
+    
+    
